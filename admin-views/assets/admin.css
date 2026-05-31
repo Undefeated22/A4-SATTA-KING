@@ -1,0 +1,122 @@
+/* ── A4 Satta King Admin Panel ── */
+:root {
+  --bg:#0d0d0d; --surface:#171717; --surface2:#1f1f1f; --surface3:#272727;
+  --border:#2e2e2e; --gold:#ffd700; --red:#e8000d; --dark-red:#9b0008;
+  --green:#00cc44; --blue:#3b82f6; --white:#f0f0f0; --gray:#888;
+  --font:'Inter',system-ui,sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%}
+body{background:var(--bg);color:var(--white);font-family:var(--font);min-height:100vh}
+a{color:var(--gold);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* ── Login screen ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.login-logo{text-align:center;margin-bottom:24px}
+.login-logo .crown{font-size:2.8rem}
+.login-logo h1{font-size:1.5rem;color:var(--gold);font-weight:700;margin-top:6px}
+.login-logo p{color:var(--gray);font-size:.85rem;margin-top:2px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.82rem;color:var(--gray);margin-bottom:6px;font-weight:500;letter-spacing:.5px}
+.form-group input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--white);padding:10px 14px;border-radius:8px;font-size:.95rem;font-family:inherit;transition:border-color .2s}
+.form-group input:focus{outline:none;border-color:var(--gold)}
+.btn-login{width:100%;background:var(--red);color:#fff;border:none;padding:12px;border-radius:8px;font-size:1rem;font-weight:600;letter-spacing:1px;transition:background .2s;margin-top:4px}
+.btn-login:hover{background:var(--dark-red)}
+.login-error{background:rgba(232,0,13,.15);border:1px solid var(--red);color:#ff6b6b;padding:10px 14px;border-radius:8px;font-size:.85rem;margin-top:14px;display:none}
+
+/* ── Admin shell ── */
+#admin-screen{display:none;min-height:100vh}
+.admin-header{background:var(--surface);border-bottom:2px solid var(--red);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.admin-header-left{display:flex;align-items:center;gap:12px}
+.admin-logo{font-size:1.3rem;font-weight:700;color:var(--gold)}
+.admin-logo span{color:var(--gray);font-weight:400;font-size:.85rem;margin-left:6px}
+.ws-status{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--gray)}
+.ws-dot{width:8px;height:8px;border-radius:50%;background:#888;transition:background .3s}
+.ws-dot.connected{background:var(--green)}
+.header-actions{display:flex;gap:10px;align-items:center}
+.admin-date{font-size:.85rem;color:var(--gray)}
+.btn-sm{background:var(--surface2);color:var(--white);border:1px solid var(--border);padding:6px 14px;border-radius:6px;font-size:.82rem;transition:all .2s}
+.btn-sm:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm.danger{border-color:var(--red);color:var(--red)}
+.btn-sm.danger:hover{background:var(--red);color:#fff}
+
+/* ── Main content ── */
+.admin-main{max-width:1100px;margin:0 auto;padding:24px 20px}
+.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border)}
+.tab-btn{background:none;border:none;color:var(--gray);padding:10px 20px;font-size:.9rem;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-btn:hover:not(.active){color:var(--white)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── Dashboard game cards ── */
+.date-banner{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.date-banner .label{font-size:.82rem;color:var(--gray)}
+.date-banner .value{font-size:1rem;font-weight:600;color:var(--white)}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.stat-card .stat-num{font-size:2rem;font-weight:700;color:var(--gold)}
+.stat-card .stat-label{font-size:.78rem;color:var(--gray);margin-top:4px}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.game-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;transition:border-color .2s}
+.game-card.declared{border-color:rgba(0,204,68,.3);background:rgba(0,204,68,.04)}
+.game-card.pending{border-color:rgba(232,0,13,.3)}
+.game-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.game-card-name{font-weight:700;font-size:.95rem;color:var(--white)}
+.game-card-time{font-size:.78rem;color:var(--gray);margin-top:2px}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:600;letter-spacing:.5px}
+.badge.declared{background:rgba(0,204,68,.15);color:var(--green)}
+.badge.pending{background:rgba(232,0,13,.15);color:var(--red)}
+.game-result-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.result-num-big{font-size:2.4rem;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
+.result-num-big.pending{color:var(--gray);font-size:1.2rem}
+.result-meta{font-size:.76rem;color:var(--gray);line-height:1.6}
+.yesterday-num{font-size:.85rem;color:var(--gray)}
+.yesterday-num b{color:var(--gray)}
+.declare-form{display:flex;gap:8px;align-items:center}
+.declare-form select{background:var(--surface2);border:1px solid var(--border);color:var(--white);padding:8px 12px;border-radius:6px;font-family:inherit;font-size:.95rem;flex:1}
+.declare-form select:focus{outline:none;border-color:var(--gold)}
+.btn-declare{background:var(--red);color:#fff;border:none;padding:9px 18px;border-radius:6px;font-size:.9rem;font-weight:600;transition:background .2s;white-space:nowrap}
+.btn-declare:hover{background:var(--dark-red)}
+.btn-edit{background:var(--surface2);color:var(--gold);border:1px solid var(--gold);padding:6px 14px;border-radius:6px;font-size:.82rem;font-weight:500;transition:all .2s}
+.btn-edit:hover{background:var(--gold);color:#000}
+.btn-delete{background:none;color:var(--red);border:1px solid var(--red);padding:6px 12px;border-radius:6px;font-size:.82rem;transition:all .2s}
+.btn-delete:hover{background:var(--red);color:#fff}
+.game-card-footer{display:flex;gap:8px;justify-content:flex-end;padding-top:10px;border-top:1px solid var(--border)}
+
+/* ── History ── */
+.history-controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.history-controls input[type="date"]{background:var(--surface2);border:1px solid var(--border);color:var(--white);padding:8px 12px;border-radius:6px;font-family:inherit;font-size:.9rem}
+.history-controls input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1)}
+.history-table{width:100%;border-collapse:collapse}
+.history-table th{background:var(--surface2);color:var(--gray);font-size:.8rem;font-weight:600;letter-spacing:.8px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.history-table td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:.88rem;vertical-align:middle}
+.history-table tr:hover td{background:var(--surface2)}
+.history-table .num-cell{font-size:1.2rem;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
+
+/* ── Password change ── */
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;max-width:420px}
+.settings-card h3{font-size:1rem;color:var(--gold);margin-bottom:18px;font-weight:600}
+
+/* ── Toast ── */
+#toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--surface3);border-left:4px solid var(--green);color:var(--white);padding:12px 18px;border-radius:8px;font-size:.88rem;box-shadow:0 4px 20px rgba(0,0,0,.7);animation:toast-in .3s ease;max-width:340px}
+.toast.error{border-color:var(--red)}
+.toast.info{border-color:var(--blue)}
+@keyframes toast-in{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── Modal ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.8)}
+.modal h2{font-size:1.1rem;color:var(--gold);margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+
+/* ── Responsive ── */
+@media(max-width:600px){
+  .admin-main{padding:16px 12px}
+  .games-grid{grid-template-columns:1fr}
+  .admin-header{flex-wrap:wrap;gap:8px}
+}

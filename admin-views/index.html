@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Panel – A4 Satta King</title>
+  <meta name="robots" content="noindex,nofollow"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/admin/assets/admin.css"/>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="crown">♛</div>
+      <h1>A4 SATTA KING</h1>
+      <p>Admin Control Panel</p>
+    </div>
+    <div class="form-group">
+      <label>USERNAME</label>
+      <input type="text" id="login-user" placeholder="admin" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>PASSWORD</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-login" id="btn-login">🔐 LOGIN</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN SCREEN ═════════════════════════════════ -->
+<div id="admin-screen">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="admin-header-left">
+      <div class="admin-logo">♛ A4 Admin <span>Control Panel</span></div>
+      <div class="ws-status"><span class="ws-dot" id="ws-dot"></span><span id="ws-label">Connecting...</span></div>
+    </div>
+    <div class="header-actions">
+      <div class="admin-date" id="admin-clock"></div>
+      <button class="btn-sm" onclick="openTab('history')">📋 History</button>
+      <button class="btn-sm" onclick="openTab('settings')">⚙️ Settings</button>
+      <button class="btn-sm danger" id="btn-logout">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="admin-main">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-dashboard" onclick="openTab('dashboard')">🎯 Dashboard</button>
+      <button class="tab-btn" id="tab-history"   onclick="openTab('history')">📋 History</button>
+      <button class="tab-btn" id="tab-settings"  onclick="openTab('settings')">⚙️ Settings</button>
+    </div>
+
+    <!-- ── DASHBOARD TAB ── -->
+    <div class="tab-panel active" id="panel-dashboard">
+      <div class="date-banner">
+        <div><div class="label">Today's Date (IST)</div><div class="value" id="today-date">—</div></div>
+        <div><div class="label">Last Declared</div><div class="value" id="last-declared">—</div></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Games</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-declared">—</div><div class="stat-label">Declared Today</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-pending">—</div><div class="stat-label">Pending</div></div>
+      </div>
+      <div class="games-grid" id="games-grid">
+        <div style="color:var(--gray);padding:20px;text-align:center">Loading...</div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY TAB ── -->
+    <div class="tab-panel" id="panel-history">
+      <div class="history-controls">
+        <input type="date" id="history-date"/>
+        <button class="btn-declare" onclick="loadHistory()">🔍 Load</button>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>GAME</th><th>SCHEDULED</th><th>RESULT</th><th>DECLARED AT</th><th>BY</th><th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--gray)">Select a date above</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── SETTINGS TAB ── -->
+    <div class="tab-panel" id="panel-settings">
+      <div class="settings-card">
+        <h3>🔑 Change Password</h3>
+        <div class="form-group">
+          <label>CURRENT PASSWORD</label>
+          <input type="password" id="old-pass" placeholder="Current password"/>
+        </div>
+        <div class="form-group">
+          <label>NEW PASSWORD (min 8 chars)</label>
+          <input type="password" id="new-pass" placeholder="New password"/>
+        </div>
+        <div class="form-group">
+          <label>CONFIRM NEW PASSWORD</label>
+          <input type="password" id="conf-pass" placeholder="Confirm new password"/>
+        </div>
+        <button class="btn-declare" onclick="changePassword()">Save Password</button>
+        <div id="pw-msg" style="margin-top:12px;font-size:.85rem;display:none"></div>
+      </div>
+    </div>
+
+  </div><!-- /admin-main -->
+</div><!-- /admin-screen -->
+
+<!-- ══ EDIT MODAL ════════════════════════════════════ -->
+<div class="modal-backdrop" id="edit-modal">
+  <div class="modal">
+    <h2>✏️ Edit Result</h2>
+    <p style="color:var(--gray);font-size:.85rem;margin-bottom:16px" id="edit-modal-subtitle"></p>
+    <div class="form-group">
+      <label>NEW RESULT (00–99)</label>
+      <select id="edit-result-num" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--white);padding:10px 12px;border-radius:6px;font-size:1rem"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-declare" onclick="submitEdit()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/admin/assets/admin.js"></script>
+</body>
+</html>
