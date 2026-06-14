@@ -1,112 +1,94 @@
 /**
  * admin-views/assets/admin.js  –  A4 Satta King Admin Panel
  *
- * FIX 4.1: Result input uses a <select> dropdown (00-99) instead of
- *   type="number", preventing browsers from stripping leading zeros.
- *   Numbers are always integers in the DB; display padding happens client-side.
+ * NEW:
+ *  - Dashboard date picker → declare/edit results for ANY day
+ *  - Custom declared-time field (defaults to now, can be set to any time)
+ *  - Edit modal supports changing number, date, and time of any result
  */
 
-/* ══════════════════════════════════════════════
-   STATE
-══════════════════════════════════════════════ */
-let token        = localStorage.getItem('sk_admin_token') || '';
-let dashboardData= [];
-let editResultId = null;   // ID of result being edited
-let socket       = null;
+let token         = localStorage.getItem('sk_admin_token') || '';
+let dashboardData = [];
+let dashboardDate = '';          // currently viewed date on dashboard
+let editResultId  = null;
+let editRowData   = null;        // full row being edited
+let socket        = null;
 
-/* ══════════════════════════════════════════════
-   BOOT
-══════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
   populateResultDropdowns();
   startClock();
+  setDashboardDateToToday();
   setHistoryDateToToday();
 
-  if (token) {
-    showAdmin();
-  }
+  if (token) showAdmin();
 
-  /* Login */
   document.getElementById('btn-login').addEventListener('click', doLogin);
-  document.getElementById('login-pass').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
-  });
-
-  /* Logout */
+  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('btn-logout').addEventListener('click', logout);
+  document.getElementById('edit-modal').addEventListener('click', e => { if (e.target.id === 'edit-modal') closeEditModal(); });
 
-  /* Edit modal – close on backdrop click */
-  document.getElementById('edit-modal').addEventListener('click', e => {
-    if (e.target.id === 'edit-modal') closeEditModal();
-  });
+  // Dashboard date change → reload that day
+  const dd = document.getElementById('dashboard-date');
+  if (dd) dd.addEventListener('change', () => { dashboardDate = dd.value; loadDashboard(); });
 });
 
-/* ══════════════════════════════════════════════
-   FIX 4.1 – populate result select (00-99)
-══════════════════════════════════════════════ */
+/* ── Result dropdowns (00-99) ────────────────────────────── */
 function populateResultDropdowns() {
-  [document.getElementById('edit-result-num')].forEach(sel => {
-    if (!sel) return;
-    for (let i = 0; i <= 99; i++) {
-      const opt = document.createElement('option');
-      opt.value       = i;        // integer sent to API
-      opt.textContent = pad(i);   // "00", "01", ... displayed
-      sel.appendChild(opt);
-    }
-  });
+  const sel = document.getElementById('edit-result-num');
+  if (sel) for (let i = 0; i <= 99; i++) {
+    const o = document.createElement('option'); o.value = i; o.textContent = pad(i); sel.appendChild(o);
+  }
 }
 
-/* ══════════════════════════════════════════════
-   CLOCK
-══════════════════════════════════════════════ */
+/* ── Clock ───────────────────────────────────────────────── */
 function startClock() {
   function tick() {
     const ist = new Date(Date.now() + 5.5 * 3600 * 1000);
-    const s = ist.toISOString().replace('T',' ').slice(0,19);
     const el = document.getElementById('admin-clock');
-    if (el) el.textContent = '⏱ ' + s + ' IST';
+    if (el) el.textContent = '⏱ ' + ist.toISOString().replace('T',' ').slice(0,19) + ' IST';
   }
   tick(); setInterval(tick, 1000);
 }
 
-/* ══════════════════════════════════════════════
-   AUTH
-══════════════════════════════════════════════ */
+function istToday() { return new Date(Date.now() + 5.5*3600*1000).toISOString().slice(0,10); }
+function istNowHHMM() { return new Date(Date.now() + 5.5*3600*1000).toISOString().slice(11,16); }
+
+function setDashboardDateToToday() {
+  dashboardDate = istToday();
+  const el = document.getElementById('dashboard-date');
+  if (el) el.value = dashboardDate;
+}
+function setHistoryDateToToday() {
+  const el = document.getElementById('history-date');
+  if (el) el.value = istToday();
+}
+
+/* ── Auth ────────────────────────────────────────────────── */
 async function doLogin() {
   const username = document.getElementById('login-user').value.trim();
   const password = document.getElementById('login-pass').value;
-  const errEl    = document.getElementById('login-error');
-  const btn      = document.getElementById('btn-login');
-
+  const btn = document.getElementById('btn-login');
   if (!username || !password) { showLoginError('Username and password required'); return; }
   btn.textContent = 'Logging in...'; btn.disabled = true;
-
   try {
-    const res  = await api('/api/admin/login', 'POST', { username, password }, false);
+    const res = await api('/api/admin/login', 'POST', { username, password }, false);
     token = res.token;
     localStorage.setItem('sk_admin_token', token);
-    errEl.style.display = 'none';
+    document.getElementById('login-error').style.display = 'none';
     showAdmin();
-  } catch (err) {
-    showLoginError(err.message || 'Login failed');
-  } finally {
-    btn.textContent = '🔐 LOGIN'; btn.disabled = false;
-  }
+  } catch (err) { showLoginError(err.message || 'Login failed'); }
+  finally { btn.textContent = '🔐 LOGIN'; btn.disabled = false; }
 }
-
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
   el.textContent = '⚠️ ' + msg; el.style.display = 'block';
 }
-
 function logout() {
-  token = '';
-  localStorage.removeItem('sk_admin_token');
+  token = ''; localStorage.removeItem('sk_admin_token');
   document.getElementById('admin-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
   if (socket) socket.disconnect();
 }
-
 function showAdmin() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-screen').style.display = 'block';
@@ -115,54 +97,45 @@ function showAdmin() {
   openTab('dashboard');
 }
 
-/* ══════════════════════════════════════════════
-   SOCKET.IO
-══════════════════════════════════════════════ */
+/* ── Socket ──────────────────────────────────────────────── */
 function initSocket() {
   if (socket) socket.disconnect();
   socket = io({ reconnectionDelay: 1000 });
-
   socket.on('connect',    () => setWsDot(true));
   socket.on('disconnect', () => setWsDot(false));
-
-  // Real-time: update the card in dashboard without full reload
   socket.on('new-result', data => {
-    patchDashboardCard(data);
-    toast('📣 ' + data.game_name + ': ' + pad(data.result_number) + ' declared');
+    // only refresh if we are viewing the same date
+    if (dashboardDate === data.result_date) loadDashboard();
+    toast('📣 ' + data.game_name + ': ' + pad(data.result_number));
   });
   socket.on('result-deleted', () => loadDashboard());
 }
-
-function setWsDot(connected) {
-  const dot = document.getElementById('ws-dot');
-  const lbl = document.getElementById('ws-label');
+function setWsDot(c) {
+  const dot = document.getElementById('ws-dot'), lbl = document.getElementById('ws-label');
   if (!dot) return;
-  dot.className = 'ws-dot' + (connected ? ' connected' : '');
-  lbl.textContent = connected ? 'Live' : 'Reconnecting...';
+  dot.className = 'ws-dot' + (c ? ' connected' : '');
+  lbl.textContent = c ? 'Live' : 'Reconnecting...';
 }
 
-/* ══════════════════════════════════════════════
-   DASHBOARD
-══════════════════════════════════════════════ */
+/* ── Dashboard ───────────────────────────────────────────── */
 async function loadDashboard() {
   try {
-    const data = await api('/api/admin/dashboard');
+    const data = await api('/api/admin/dashboard?date=' + dashboardDate);
     dashboardData = data.games || [];
 
-    document.getElementById('today-date').textContent = data.date || '—';
-    document.getElementById('stat-total').textContent    = dashboardData.length;
+    const isToday = dashboardDate === istToday();
+    const banner  = document.getElementById('date-context');
+    if (banner) banner.textContent = isToday ? 'आज / Today' : 'पुरानी तारीख / Past date — ' + dashboardDate;
+
+    document.getElementById('stat-total').textContent = dashboardData.length;
     const declared = dashboardData.filter(g => g.result_number !== null && g.result_number !== undefined);
     document.getElementById('stat-declared').textContent = declared.length;
     document.getElementById('stat-pending').textContent  = dashboardData.length - declared.length;
 
-    const lastD = declared.sort((a,b)=>(b.declared_at||'').localeCompare(a.declared_at||''))[0];
-    document.getElementById('last-declared').textContent =
-      lastD ? lastD.name + ': ' + pad(lastD.result_number) + ' @ ' + fmtTime(lastD.declared_at) : '—';
-
     renderGameCards(dashboardData);
   } catch(e) {
     if (e.status === 401 || e.status === 403) logout();
-    toast('Dashboard load failed: ' + e.message, 'error');
+    else toast('Dashboard load failed: ' + e.message, 'error');
   }
 }
 
@@ -175,31 +148,27 @@ function renderGameCards(games) {
     const resultDisplay = isDeclared
       ? `<span class="result-num-big">${pad(g.result_number)}</span>`
       : `<span class="result-num-big pending">—</span>`;
-    const yesterdayBit = g.yesterday_number !== null && g.yesterday_number !== undefined
-      ? `<div class="yesterday-num">Yesterday: <b>${pad(g.yesterday_number)}</b></div>`
-      : '';
-    const declMeta = isDeclared
-      ? `<div class="result-meta">Declared: ${fmtTime(g.declared_at)}</div>`
-      : '';
+    const yesterdayBit = (g.yesterday_number !== null && g.yesterday_number !== undefined)
+      ? `<div class="yesterday-num">Prev day: <b>${pad(g.yesterday_number)}</b></div>` : '';
+    const declMeta = isDeclared ? `<div class="result-meta">Declared: ${fmtTime(g.declared_at)}</div>` : '';
 
-    // Build a result-select dropdown per card (FIX 4.1)
     const opts = Array.from({length:100},(_,i)=>`<option value="${i}" ${isDeclared && g.result_number===i?'selected':''}>${pad(i)}</option>`).join('');
+
+    // Declare form now includes an optional time input (defaults to now)
     const declareBlock = isDeclared
       ? `<div class="game-card-footer">
-           <button class="btn-edit"   onclick="openEdit(${g.result_id},'${g.name}',${g.result_number})">✏️ Edit</button>
-           <button class="btn-delete" onclick="deleteResult(${g.result_id},${g.id},'${g.name}')">🗑 Delete</button>
+           <button class="btn-edit"   onclick="openEdit(${g.result_id},'${esc(g.name)}',${g.result_number},'${g.declared_at||''}','${dashboardDate}')">✏️ Edit</button>
+           <button class="btn-delete" onclick="deleteResult(${g.result_id},'${esc(g.name)}')">🗑 Delete</button>
          </div>`
       : `<div class="declare-form">
            <select id="sel-${g.id}">${opts}</select>
-           <button class="btn-declare" onclick="declareResult(${g.id},'${g.name}')">Declare</button>
+           <input type="time" id="time-${g.id}" class="time-input" title="Declared time (optional)"/>
+           <button class="btn-declare" onclick="declareResult(${g.id},'${esc(g.name)}')">Declare</button>
          </div>`;
 
     return `<div class="game-card ${isDeclared?'declared':'pending'}" id="card-${g.id}">
       <div class="game-card-header">
-        <div>
-          <div class="game-card-name">${g.name}</div>
-          <div class="game-card-time">${g.schedule_time}</div>
-        </div>
+        <div><div class="game-card-name">${g.name}</div><div class="game-card-time">${g.schedule_time}</div></div>
         <span class="badge ${isDeclared?'declared':'pending'}">${isDeclared?'✓ DECLARED':'PENDING'}</span>
       </div>
       <div class="game-result-row">${resultDisplay}<div>${declMeta}${yesterdayBit}</div></div>
@@ -208,46 +177,30 @@ function renderGameCards(games) {
   }).join('');
 }
 
-/** Update a single card after a socket event, without re-rendering all */
-function patchDashboardCard(data) {
-  const idx = dashboardData.findIndex(g => g.id === data.game_id);
-  if (idx === -1) { loadDashboard(); return; }
-  dashboardData[idx].result_number = data.result_number;
-  dashboardData[idx].declared_at   = data.declared_at;
-  dashboardData[idx].result_id     = dashboardData[idx].result_id || Date.now();
-
-  // Update stats
-  const declared = dashboardData.filter(g => g.result_number !== null && g.result_number !== undefined);
-  document.getElementById('stat-declared').textContent = declared.length;
-  document.getElementById('stat-pending').textContent  = dashboardData.length - declared.length;
-  document.getElementById('last-declared').textContent =
-    data.game_name + ': ' + pad(data.result_number) + ' @ ' + fmtTime(data.declared_at);
-
-  // Re-render just that card
-  renderGameCards(dashboardData);
-}
-
-/* ══════════════════════════════════════════════
-   DECLARE / EDIT / DELETE
-══════════════════════════════════════════════ */
+/* ── Declare (for the currently selected dashboard date) ──── */
 async function declareResult(gameId, gameName) {
-  const sel = document.getElementById('sel-' + gameId);
+  const sel  = document.getElementById('sel-' + gameId);
+  const time = document.getElementById('time-' + gameId);
   if (!sel) return;
-  const num = parseInt(sel.value, 10);
-
+  const num  = parseInt(sel.value, 10);
+  const body = { game_id: gameId, result_number: num, result_date: dashboardDate };
+  if (time && time.value) body.declared_time = time.value;   // custom time if set
   try {
-    await api('/api/admin/declare-result', 'POST', { game_id: gameId, result_number: num });
-    toast('✅ ' + gameName + ': ' + pad(num) + ' declared!');
+    await api('/api/admin/declare-result', 'POST', body);
+    toast('✅ ' + gameName + ': ' + pad(num) + ' declared');
     loadDashboard();
-  } catch(e) {
-    toast('Error: ' + e.message, 'error');
-  }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-function openEdit(resultId, gameName, currentNum) {
+/* ── Edit modal (number + date + time) ───────────────────── */
+function openEdit(resultId, gameName, currentNum, declaredAt, resultDate) {
   editResultId = resultId;
   document.getElementById('edit-modal-subtitle').textContent = 'Game: ' + gameName;
   document.getElementById('edit-result-num').value = currentNum;
+  document.getElementById('edit-date').value = resultDate || istToday();
+  // Pre-fill time from declaredAt "YYYY-MM-DD HH:MM:SS"
+  const t = (declaredAt && declaredAt.length >= 16) ? declaredAt.slice(11,16) : istNowHHMM();
+  document.getElementById('edit-time').value = t;
   document.getElementById('edit-modal').classList.add('open');
 }
 function closeEditModal() {
@@ -256,48 +209,37 @@ function closeEditModal() {
 }
 async function submitEdit() {
   if (editResultId == null) return;
-  const num = parseInt(document.getElementById('edit-result-num').value, 10);
+  const num  = parseInt(document.getElementById('edit-result-num').value, 10);
+  const date = document.getElementById('edit-date').value;
+  const time = document.getElementById('edit-time').value;
+  const body = { result_number: num, result_date: date };
+  if (time) body.declared_time = time;
   try {
-    await api('/api/admin/result/' + editResultId, 'PUT', { result_number: num });
-    toast('✅ Result updated to ' + pad(num));
+    await api('/api/admin/result/' + editResultId, 'PUT', body);
+    toast('✅ Result updated');
     closeEditModal();
     loadDashboard();
-  } catch(e) {
-    toast('Error: ' + e.message, 'error');
-  }
+    if (document.getElementById('panel-history').classList.contains('active')) loadHistory();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-async function deleteResult(resultId, gameId, gameName) {
+async function deleteResult(resultId, gameName) {
   if (!confirm('Delete result for ' + gameName + '?')) return;
   try {
     await api('/api/admin/result/' + resultId, 'DELETE');
-    toast('🗑 Result for ' + gameName + ' deleted');
+    toast('🗑 Deleted ' + gameName);
     loadDashboard();
-  } catch(e) {
-    toast('Error: ' + e.message, 'error');
-  }
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
 }
 
-/* ══════════════════════════════════════════════
-   HISTORY TAB
-══════════════════════════════════════════════ */
-function setHistoryDateToToday() {
-  const ist  = new Date(Date.now() + 5.5 * 3600 * 1000);
-  const date = ist.toISOString().slice(0,10);
-  const el   = document.getElementById('history-date');
-  if (el) el.value = date;
-}
-
+/* ── History ─────────────────────────────────────────────── */
 async function loadHistory() {
   const date  = document.getElementById('history-date').value;
   const tbody = document.getElementById('history-tbody');
   tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray)">Loading...</td></tr>';
   try {
     const rows = await api('/api/admin/history?date=' + date);
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray)">No results for this date</td></tr>';
-      return;
-    }
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray)">No results for this date</td></tr>'; return; }
     tbody.innerHTML = rows.map(r => `
       <tr>
         <td><b>${r.game_name}</b></td>
@@ -306,101 +248,69 @@ async function loadHistory() {
         <td style="color:var(--gray)">${fmtTime(r.declared_at)}</td>
         <td style="color:var(--gray)">${r.declared_by}</td>
         <td>
-          <button class="btn-edit" style="font-size:.78rem;padding:4px 10px" onclick="openEdit(${r.id},'${r.game_name}',${r.result_number})">✏️</button>
-          <button class="btn-delete" style="font-size:.78rem;padding:4px 10px;margin-left:4px" onclick="deleteResult(${r.id},${r.game_id},'${r.game_name}')">🗑</button>
+          <button class="btn-edit" style="font-size:.78rem;padding:0 10px;min-height:32px" onclick="openEdit(${r.id},'${esc(r.game_name)}',${r.result_number},'${r.declared_at||''}','${r.result_date}')">✏️</button>
+          <button class="btn-delete" style="font-size:.78rem;padding:0 10px;min-height:32px;margin-left:4px" onclick="deleteResult(${r.id},'${esc(r.game_name)}')">🗑</button>
         </td>
       </tr>`).join('');
-  } catch(e) {
-    toast('History load failed', 'error');
-  }
+  } catch(e) { toast('History load failed', 'error'); }
 }
 
-/* ══════════════════════════════════════════════
-   SETTINGS – CHANGE PASSWORD
-══════════════════════════════════════════════ */
+/* ── Settings ────────────────────────────────────────────── */
 async function changePassword() {
   const old_password = document.getElementById('old-pass').value;
   const new_password = document.getElementById('new-pass').value;
-  const conf         = document.getElementById('conf-pass').value;
-  const msgEl        = document.getElementById('pw-msg');
-
-  msgEl.style.display = 'none';
-  if (!old_password || !new_password) { showPwMsg('All fields required', 'error'); return; }
-  if (new_password !== conf)           { showPwMsg('New passwords do not match', 'error'); return; }
-  if (new_password.length < 8)         { showPwMsg('Min 8 characters', 'error'); return; }
-
+  const conf = document.getElementById('conf-pass').value;
+  document.getElementById('pw-msg').style.display = 'none';
+  if (!old_password || !new_password) return showPwMsg('All fields required','error');
+  if (new_password !== conf)          return showPwMsg('New passwords do not match','error');
+  if (new_password.length < 8)        return showPwMsg('Min 8 characters','error');
   try {
     await api('/api/admin/change-password', 'POST', { old_password, new_password });
-    showPwMsg('✅ Password changed. You will be logged out.', 'ok');
+    showPwMsg('✅ Password changed. Logging out...', 'ok');
     setTimeout(logout, 2000);
-  } catch(e) {
-    showPwMsg('Error: ' + e.message, 'error');
-  }
+  } catch(e) { showPwMsg('Error: ' + e.message, 'error'); }
 }
-
 function showPwMsg(msg, type) {
   const el = document.getElementById('pw-msg');
-  el.textContent   = msg;
-  el.style.display = 'block';
-  el.style.color   = type === 'ok' ? 'var(--green)' : 'var(--red)';
+  el.textContent = msg; el.style.display = 'block';
+  el.style.color = type === 'ok' ? 'var(--green)' : 'var(--red)';
 }
 
-/* ══════════════════════════════════════════════
-   TABS
-══════════════════════════════════════════════ */
+/* ── Tabs ────────────────────────────────────────────────── */
 window.openTab = function(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  const btn = document.getElementById('tab-' + name);
-  const pnl = document.getElementById('panel-' + name);
+  const btn = document.getElementById('tab-' + name), pnl = document.getElementById('panel-' + name);
   if (btn) btn.classList.add('active');
   if (pnl) pnl.classList.add('active');
   if (name === 'history') loadHistory();
 };
 
-/* ══════════════════════════════════════════════
-   API HELPER
-══════════════════════════════════════════════ */
-async function api(url, method = 'GET', body = null, useToken = true) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-  };
+/* ── API helper ──────────────────────────────────────────── */
+async function api(url, method='GET', body=null, useToken=true) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (useToken && token) opts.headers['Authorization'] = 'Bearer ' + token;
   if (body) opts.body = JSON.stringify(body);
-
-  const res  = await fetch(url, opts);
+  const res = await fetch(url, opts);
   const data = await res.json();
-
-  if (!res.ok) {
-    const err = new Error(data.error || 'Request failed');
-    err.status = res.status;
-    throw err;
-  }
+  if (!res.ok) { const e = new Error(data.error || 'Request failed'); e.status = res.status; throw e; }
   return data;
 }
 
-/* ══════════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════════ */
-function toast(msg, type = 'success') {
+/* ── Toast ───────────────────────────────────────────────── */
+function toast(msg, type='success') {
   const c = document.getElementById('toast-container');
   const t = document.createElement('div');
-  t.className = 'toast' + (type === 'error' ? ' error' : type === 'info' ? ' info' : '');
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(40px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),350); }, 4500);
+  t.className = 'toast' + (type==='error'?' error':type==='info'?' info':'');
+  t.textContent = msg; c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(16px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),350); }, 4500);
 }
 
-/* ══════════════════════════════════════════════
-   HELPERS
-══════════════════════════════════════════════ */
+/* ── Helpers ─────────────────────────────────────────────── */
 function pad(n) { return String(n).padStart(2,'0'); }
+function esc(s) { return String(s).replace(/'/g, "\\'"); }
 function fmtTime(s) {
   if (!s) return '—';
-  try {
-    const [,t] = s.split(' ');
-    const [h,m] = t.split(':').map(Number);
-    return pad(h%12||12)+':'+pad(m)+' '+(h>=12?'PM':'AM');
-  } catch { return s; }
+  try { const [,t]=s.split(' '); const [h,m]=t.split(':').map(Number); return pad(h%12||12)+':'+pad(m)+' '+(h>=12?'PM':'AM'); }
+  catch { return s; }
 }
