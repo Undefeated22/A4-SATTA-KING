@@ -4,24 +4,28 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>A4 Satta King | Live Result | Gali | Disawar | Faridabad | Gaziyabad</title>
-  <meta name="description" content="A4 Satta King live result today. Gali result, Disawar result, Faridabad, Gaziyabad, Delhi Bazar, Satta king chart 2026."/>
+  <meta name="description" content="A4 Satta King live result today. Gali result, Disawar result, Faridabad, Gaziyabad, Satta king chart 2026."/>
+  <link rel="icon" type="image/svg+xml" href="/img/favicon.svg"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Hind:wght@400;500;600;700&family=Baloo+2:wght@400;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/css/style.css"/>
+  <link rel="stylesheet" href="/css/features.css"/>
 </head>
 <body>
 
 <div class="marquee-bar"><span class="marquee-inner">★ A4 SATTA KING ★ LIVE RESULT ★ GALI ★ DISAWAR ★ FARIDABAD ★ GAZIYABAD ★ SADAR BAZAR ★ GWALIOR ★ SHREE GANESH ★ SITAPUR ★ GURUGRAM ★ ELLANABAD ★ सट्टा किंग लाइव रिजल्ट ★ आज का रिजल्ट ★</span></div>
 
+<div class="winners-bar"><span class="winners-inner" id="winners-inner"></span></div>
+
 <header>
   <div class="header-top">
-    <span class="header-crown">♛</span>
+    <img src="/img/logo.svg" alt="A4 Satta King" class="header-logo"/>
     <div class="header-text">
       <div class="site-title">A4 SATTA KING</div>
       <div class="site-subtitle">Live Result · Gali · Disawar · Faridabad · Gaziyabad</div>
     </div>
-    <span class="header-crown">♛</span>
+    <img src="/img/logo.svg" alt="" class="header-logo" aria-hidden="true"/>
   </div>
   <nav class="main-nav">
     <a href="/">🏠 HOME</a>
@@ -37,7 +41,7 @@
     <div class="live-badge" id="live-badge">🔴 LIVE RESULT</div>
     <div id="hero-game-name" style="font-family:var(--font-head);font-size:1.35rem;letter-spacing:4px;color:var(--gold);text-transform:uppercase">— अभी कोई रिजल्ट नहीं —</div>
     <div id="hero-schedule-time" style="font-family:var(--font-head);color:var(--gray);letter-spacing:2px;font-size:.9rem"></div>
-    <div id="hero-number" style="font-family:var(--font-disp);font-size:5rem;font-weight:800;line-height:1.1;color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,.7);animation:glow-pulse 2s ease-in-out infinite;transition:all .4s ease">⏳</div>
+    <div id="hero-number" style="font-family:var(--font-disp);font-size:5rem;font-weight:800;line-height:1.1;color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,.7);animation:glow-pulse 2s ease-in-out infinite">⏳</div>
     <div id="hero-declared-at" style="font-family:var(--font-head);color:var(--gray);letter-spacing:2px;font-size:.82rem;margin-top:4px"></div>
   </div>
 
@@ -63,12 +67,7 @@
   <div class="section-title">आज का सट्टा रिजल्ट — TODAY'S LIVE RESULTS</div>
   <table class="result-table" id="results-table">
     <thead>
-      <tr>
-        <th>सट्टा का नाम</th>
-        <th>कल का रिजल्ट</th>
-        <th>आज का रिजल्ट</th>
-        <th>घोषित समय</th>
-      </tr>
+      <tr><th>सट्टा का नाम</th><th>कल का रिजल्ट</th><th>आज का रिजल्ट</th><th>घोषित समय</th></tr>
     </thead>
     <tbody id="results-tbody">
       <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--gray)">Loading...</td></tr>
@@ -80,26 +79,18 @@
     <div class="chart-controls">
       <select id="chart-game"><option value="">— सभी गेम —</option></select>
       <select id="chart-month">
-        <option value="1">January</option>
-        <option value="2">February</option>
-        <option value="3">March</option>
-        <option value="4">April</option>
-        <option value="5">May</option>
-        <option value="6">June</option>
-        <option value="7">July</option>
-        <option value="8">August</option>
-        <option value="9">September</option>
-        <option value="10">October</option>
-        <option value="11">November</option>
-        <option value="12">December</option>
+        <option value="1">January</option><option value="2">February</option>
+        <option value="3">March</option><option value="4">April</option>
+        <option value="5">May</option><option value="6">June</option>
+        <option value="7">July</option><option value="8">August</option>
+        <option value="9">September</option><option value="10">October</option>
+        <option value="11">November</option><option value="12">December</option>
       </select>
       <input type="number" id="chart-year" min="2020" max="2099" style="width:90px"/>
       <button class="btn-primary" onclick="loadChart()">📊 देखें / View</button>
     </div>
     <div id="chart-title" class="section-title sub"></div>
-    <div class="chart-table-wrap">
-      <div id="chart-container"></div>
-    </div>
+    <div class="chart-table-wrap"><div id="chart-container"></div></div>
   </div>
 
   <div id="contact">
@@ -121,11 +112,27 @@
 <footer>
   <strong>♛ A4 SATTA KING ♛</strong><br/>
   सट्टा किंग लाइव रिजल्ट — Satta King Live Result<br/>
-  © <span id="footer-year"></span> A4-SattaKing.com · All Rights Reserved
+  © <span id="footer-year"></span> A4-SattaKing.net · All Rights Reserved
 </footer>
+
+<canvas id="confetti-canvas"></canvas>
+
+<a class="wa-float" href="https://wa.me/+919992030961" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 32 32"><path d="M16 .4A15.6 15.6 0 0 0 2.9 24l-2 7.6 7.8-2A15.6 15.6 0 1 0 16 .4zm0 28.4a12.8 12.8 0 0 1-6.5-1.8l-.5-.3-4.6 1.2 1.2-4.5-.3-.5A12.8 12.8 0 1 1 16 28.8zm7-9.6c-.4-.2-2.3-1.1-2.6-1.2s-.6-.2-.9.2-1 1.2-1.2 1.5-.4.3-.8.1a10.5 10.5 0 0 1-3.1-1.9 11.5 11.5 0 0 1-2.1-2.7c-.2-.4 0-.6.2-.8l.6-.7.4-.6a.7.7 0 0 0 0-.7c0-.2-.9-2.1-1.2-2.9s-.6-.6-.8-.6h-.7a1.3 1.3 0 0 0-1 .4 4 4 0 0 0-1.2 2.9c0 1.7 1.2 3.4 1.4 3.6s2.5 3.8 6 5.3a20 20 0 0 0 2 .7 4.8 4.8 0 0 0 2.2.2c.7-.1 2.3-1 2.6-1.8s.3-1.6.2-1.8-.3-.3-.7-.4z"/></svg>
+</a>
+
+<div class="history-backdrop" id="history-backdrop">
+  <div class="history-sheet">
+    <button class="hs-close" onclick="closeGameHistory()">✕</button>
+    <h3 id="history-sheet-title">Game</h3>
+    <div class="hs-sub">पिछले रिजल्ट — Recent Results</div>
+    <div id="history-sheet-body"></div>
+  </div>
+</div>
 
 <div id="toast-container"></div>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/js/features.js"></script>
 <script src="/js/main.js"></script>
 </body>
 </html>

@@ -1,0 +1,48 @@
+/* ============================================================
+   A4 Satta King — Feature styles (logo + 6 features)
+============================================================ */
+
+/* ── Logo in header ──────────────────────────────────────── */
+.header-logo{width:54px;height:54px;flex-shrink:0}
+@media(min-width:600px){.header-logo{width:64px;height:64px}}
+
+/* ── 1. Animated number reveal (slot machine) ───────────── */
+.slot-rolling{animation:slot-shake .08s linear infinite}
+@keyframes slot-shake{0%{transform:translateY(-2px)}50%{transform:translateY(2px)}100%{transform:translateY(-2px)}}
+.reveal-pop{animation:reveal-pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes reveal-pop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.25)}100%{transform:scale(1);opacity:1}}
+
+/* ── 2. Confetti ─────────────────────────────────────────── */
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9998;display:none}
+
+/* ── 3. Countdown timer ──────────────────────────────────── */
+.countdown{display:inline-block;font-family:var(--font-head);font-size:.78rem;color:var(--green);letter-spacing:1px;background:rgba(0,204,68,.1);border:1px solid rgba(0,204,68,.3);padding:1px 8px;border-radius:10px;margin-top:3px}
+.countdown.soon{color:var(--gold);background:rgba(255,215,0,.12);border-color:rgba(255,215,0,.35);animation:cd-pulse 1s ease-in-out infinite}
+@keyframes cd-pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* ── 4. Floating WhatsApp button ─────────────────────────── */
+.wa-float{position:fixed;bottom:18px;right:18px;width:56px;height:56px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;z-index:9000;box-shadow:0 4px 16px rgba(0,0,0,.5);text-decoration:none;animation:wa-bounce 2.5s ease-in-out infinite}
+.wa-float svg{width:30px;height:30px;fill:#fff}
+.wa-float:hover{background:#128c7e}
+@keyframes wa-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@media(min-width:600px){.wa-float{width:60px;height:60px;bottom:24px;right:24px}}
+
+/* ── 5. History popup modal ──────────────────────────────── */
+.history-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9500;display:none;align-items:flex-end;justify-content:center}
+.history-backdrop.open{display:flex}
+.history-sheet{background:var(--dark1);border:1px solid var(--gold);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:18px 16px 28px}
+@media(min-width:480px){.history-backdrop{align-items:center}.history-sheet{border-radius:14px}}
+.history-sheet h3{font-family:var(--font-head);color:var(--gold);font-size:1.4rem;letter-spacing:2px;text-align:center;margin-bottom:4px}
+.history-sheet .hs-sub{text-align:center;color:var(--gray);font-size:.8rem;margin-bottom:14px}
+.history-sheet .hs-close{position:sticky;top:0;float:right;background:var(--dark3);color:var(--white);border:none;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+.hs-table{width:100%;border-collapse:collapse;margin-top:8px}
+.hs-table td{padding:9px 10px;border-bottom:1px solid var(--dark4);font-size:.9rem}
+.hs-table td:first-child{color:var(--gray)}
+.hs-table td:last-child{text-align:right;font-family:var(--font-disp);font-weight:700;font-size:1.2rem;color:var(--green)}
+.hs-table tr.today td:last-child{color:var(--gold)}
+.game-link{cursor:pointer}
+
+/* ── 6. Winners ticker ───────────────────────────────────── */
+.winners-bar{background:linear-gradient(90deg,#0d1a00,#1a1a00);border-bottom:1px solid var(--gold);overflow:hidden;padding:5px 0;white-space:nowrap}
+.winners-inner{display:inline-block;animation:marquee 35s linear infinite;font-family:var(--font-body);font-size:.85rem;color:var(--green);padding-right:60px}
+.winners-inner b{color:var(--gold)}

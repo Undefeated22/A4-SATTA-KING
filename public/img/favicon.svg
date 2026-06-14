@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#1a0000"/>
+  <g transform="translate(32,24)">
+    <path d="M -16 8 L -16 -5 L -8 2 L 0 -8 L 8 2 L 16 -5 L 16 8 Z" fill="#ffd700"/>
+    <rect x="-16" y="8" width="32" height="3" rx="1" fill="#ffd700"/>
+  </g>
+  <text x="32" y="52" text-anchor="middle" font-family="Georgia, serif" font-size="22" font-weight="700" fill="#ffd700">A4</text>
+</svg>

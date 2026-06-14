@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160" role="img" aria-label="A4 Satta King">
+  <circle cx="80" cy="80" r="76" fill="#1a0000" stroke="#ffd700" stroke-width="3"/>
+  <circle cx="80" cy="80" r="66" fill="none" stroke="#9b0008" stroke-width="1.5"/>
+  <g transform="translate(80,52)">
+    <path d="M -34 16 L -34 -10 L -18 4 L 0 -16 L 18 4 L 34 -10 L 34 16 Z" fill="#ffd700" stroke="#c8a200" stroke-width="1"/>
+    <circle cx="-34" cy="-14" r="4" fill="#ffd700"/>
+    <circle cx="0" cy="-20" r="4.5" fill="#ffd700"/>
+    <circle cx="34" cy="-14" r="4" fill="#ffd700"/>
+    <rect x="-34" y="16" width="68" height="6" rx="2" fill="#ffd700"/>
+  </g>
+  <text x="80" y="116" text-anchor="middle" font-family="Georgia, serif" font-size="46" font-weight="700" fill="#ffd700">A4</text>
+</svg>
